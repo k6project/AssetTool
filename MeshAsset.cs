@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AssetTool
 {
@@ -27,10 +28,29 @@ namespace AssetTool
             public Triangle(ref Vertex a, ref Vertex b, ref Vertex c) { VertexA = a; VertexB = b; VertexC = c; }
         }
 
+        private float BoundingSphereRadius;
+        private Vec3D Max, Min, MassCenter;
+
         private List<Vec3D> Points = null;
         private List<Vec3D> Normals = null;
         private List<Vec2D> TexCoords = null;
         private List<Triangle> Triangles = null;
+
+        public void UpdateBoundingVolumes()
+        {
+            BoundingSphereRadius = 0.0f;
+            MassCenter.X = Min.X + (Max.X - Min.X) * 0.5f;
+            MassCenter.Y = Min.Y + (Max.Y - Min.Y) * 0.5f;
+            MassCenter.Z = Min.Z + (Max.Z - Min.Z) * 0.5f;
+            foreach (Vec3D point in Points)
+            {
+                float dx = point.X - MassCenter.X;
+                float dy = point.Y - MassCenter.Y;
+                float dz = point.Z - MassCenter.Z;
+                float r = (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                BoundingSphereRadius = Math.Max(r, BoundingSphereRadius);
+            }
+        }
 
         public void AddTriangle(ref Vertex a, ref Vertex b, ref Vertex c)
         {
@@ -45,9 +65,17 @@ namespace AssetTool
         {
             if (Points == null)
             {
-                Points = new List<Vec3D>();      
+                Points = new List<Vec3D>();
+                Min = new Vec3D(x, y, z);
+                Max = new Vec3D(x, y, z);
             }
             Points.Add(new Vec3D(x, y, z));
+            Max.X = Math.Max(x, Max.X);
+            Max.Y = Math.Max(y, Max.Y);
+            Max.Z = Math.Max(z, Max.Z);
+            Min.X = Math.Min(x, Min.X);
+            Min.Y = Math.Min(y, Min.Y);
+            Min.Z = Math.Min(z, Min.Z);
         }
 
         public void AddNormal(float x, float y, float z)

@@ -11,6 +11,10 @@ namespace AssetTool
                 using (StreamReader source = new StreamReader(args[0]))
                 {
                     MeshAsset asset = MeshLoader.LoadFromOBJ(source);
+                    if (asset != null)
+                    {
+                        //
+                    }
                 }
             }
         }
