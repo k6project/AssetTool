@@ -39,9 +39,13 @@ namespace AssetTool
                         using (FileStream output = new FileStream(options.OutputPath, FileMode.Create))
                         {
                             BinaryWriter writer = new BinaryWriter(output);
+                            uint bufferSize = sizeof(float) * (uint)(vertexData.Length + boundsData.Length) + sizeof(ushort) * (uint)indexData.Length;
+
+                            writer.Write(bufferSize);
                             writer.Write(options.ExportFlags);
                             writer.Write((uint)indexData.Length);
                             writer.Write((uint)vertexData.Length);
+
                             foreach (float value in boundsData)
                             {
                                 writer.Write(value);
