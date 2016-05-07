@@ -5,6 +5,15 @@ namespace AssetTool
 {
     class MeshAsset
     {
+        public const uint EXPORT_NORMAL = 0x0001;
+        public const uint EXPORT_TEXCOORD0 = 0x0002;
+        public const uint EXPORT_BOUNDBOX = 0x0004;
+        public const uint EXPORT_BOUNDSPHERE = 0x0008;
+        //TODO: Vertex color
+        public const uint EXPORT_U8_INDICES = 0x1000;
+        public const uint EXPORT_U16_INDICES = 0x2000;
+        public const uint EXPORT_ALL = 0x000F;
+
         public struct Vertex
         {
             public int Point, TexCoord, Normal;
@@ -24,8 +33,8 @@ namespace AssetTool
 
         private struct Triangle
         {
-            public Vertex VertexA, VertexB, VertexC;
-            public Triangle(ref Vertex a, ref Vertex b, ref Vertex c) { VertexA = a; VertexB = b; VertexC = c; }
+            public uint VertexA, VertexB, VertexC;
+            public Triangle(uint a, uint b, uint c) { VertexA = a; VertexB = b; VertexC = c; }
         }
 
         private float BoundingSphereRadius;
@@ -34,7 +43,85 @@ namespace AssetTool
         private List<Vec3D> Points = null;
         private List<Vec3D> Normals = null;
         private List<Vec2D> TexCoords = null;
+        private List<Vertex> Vertices = null;
         private List<Triangle> Triangles = null;
+
+        public ushort[] SerializeIndexData()
+        {
+            int index = 0;
+            ushort[] retVal = new ushort[3 * Triangles.Count];
+            foreach (Triangle tri in Triangles)
+            {
+                retVal[index++] = (ushort)(tri.VertexA & 0xFFFF);
+                retVal[index++] = (ushort)(tri.VertexB & 0xFFFF);
+                retVal[index++] = (ushort)(tri.VertexC & 0xFFFF);
+            }
+            return retVal;
+        }
+
+        public float[] SerializeBoundingShapes(uint flags = 0)
+        {
+            int size = 0, index = 0;
+            if ((flags & EXPORT_BOUNDBOX) != 0)
+            {
+                size += 6;
+            }
+            if ((flags & EXPORT_BOUNDSPHERE) != 0)
+            {
+                size += 4;
+            }
+            float[] retVal = new float[size];
+            if ((flags & EXPORT_BOUNDBOX) != 0)
+            {
+                retVal[index++] = Min.X;
+                retVal[index++] = Min.Y;
+                retVal[index++] = Min.Z;
+                retVal[index++] = Max.X;
+                retVal[index++] = Max.Y;
+                retVal[index++] = Max.Z;
+            }
+            if ((flags & EXPORT_BOUNDSPHERE) != 0)
+            {
+                retVal[index++] = MassCenter.X;
+                retVal[index++] = MassCenter.Y;
+                retVal[index++] = MassCenter.Z;
+                retVal[index++] = BoundingSphereRadius;
+            }
+            return retVal;
+        }
+
+        public float[] SerializeVertexData(uint flags = 0)
+        {
+            int index = 0;
+            int vertexSize = 3;
+            if ((flags & EXPORT_NORMAL) != 0)
+            {
+                vertexSize += 3;
+            }
+            if ((flags & EXPORT_TEXCOORD0) != 0)
+            {
+                vertexSize += 2;
+            }
+            float[] retVal = new float[vertexSize * Vertices.Count];
+            foreach (Vertex vertex in Vertices)
+            {
+                retVal[index++] = Points[vertex.Point].X;
+                retVal[index++] = Points[vertex.Point].Y;
+                retVal[index++] = Points[vertex.Point].Z;
+                if ((flags & EXPORT_NORMAL) != 0)
+                {
+                    retVal[index++] = Normals[vertex.Normal].X;
+                    retVal[index++] = Normals[vertex.Normal].Y;
+                    retVal[index++] = Normals[vertex.Normal].Z;
+                }
+                if ((flags & EXPORT_TEXCOORD0) != 0)
+                {
+                    retVal[index++] = TexCoords[vertex.TexCoord].X;
+                    retVal[index++] = TexCoords[vertex.TexCoord].Y;
+                }
+            }
+            return retVal;
+        }
 
         public void UpdateBoundingVolumes()
         {
@@ -58,7 +145,24 @@ namespace AssetTool
             {
                 Triangles = new List<Triangle>();
             }
-            Triangles.Add(new Triangle(ref a, ref b, ref c));
+
+            Triangles.Add(new Triangle(AddVertex(a), AddVertex(b), AddVertex(c)));
+        }
+
+        private uint AddVertex(Vertex vertex)
+        {
+            if (Vertices == null)
+            {
+                Vertices = new List<Vertex>();
+            }
+
+            int index = Vertices.FindIndex((Vertex v) => (v.Point == vertex.Point && v.Normal == vertex.Normal && v.TexCoord == vertex.TexCoord));
+            if (index < 0)
+            {
+                Vertices.Add(vertex);
+                index = Vertices.Count - 1;
+            }
+            return (uint)index;
         }
 
         public void AddPoint(float x, float y, float z)
