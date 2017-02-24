@@ -9,7 +9,6 @@ namespace AssetTool
         public const uint EXPORT_TEXCOORD0 = 0x0002;
         public const uint EXPORT_BOUNDBOX = 0x0004;
         public const uint EXPORT_BOUNDSPHERE = 0x0008;
-        //TODO: Vertex color
         public const uint EXPORT_U8_INDICES = 0x1000;
         public const uint EXPORT_U16_INDICES = 0x2000;
         public const uint EXPORT_ALL = 0x000F;
@@ -136,6 +135,31 @@ namespace AssetTool
                 float dz = point.Z - MassCenter.Z;
                 float r = (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
                 BoundingSphereRadius = Math.Max(r, BoundingSphereRadius);
+            }
+        }
+
+        public void NormalizeGeometry()
+        {
+            float scale = 1.0f / Math.Max(Math.Max((Max.X - Min.X), (Max.Y - Min.Y)), (Max.Z - Min.Z));
+
+            Min.X *= scale;
+            Min.Y *= scale;
+            Min.Z *= scale;
+            Max.X *= scale;
+            Max.Y *= scale;
+            Max.Z *= scale;
+
+            float dx = -(Max.X - Min.X) * 0.5f - Min.X;
+            float dy = -(Max.Y - Min.Y) * 0.5f - Min.Y;
+            float dz = -(Max.Z - Min.Z) * 0.5f - Min.Z;
+
+            for (int i = 0; i < Points.Count; i++)
+            {
+                Vec3D temp = Points[i];
+                temp.X *= scale + dx;
+                temp.Y *= scale + dy;
+                temp.Z *= scale + dz;
+                Points[i] = temp;
             }
         }
 

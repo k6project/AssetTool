@@ -1,28 +1,40 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Globalization;
 
 namespace AssetTool
 {
     class MeshLoader
     {
+        private static float Str2FP(string value)
+        {
+            return float.Parse(value, CultureInfo.InvariantCulture);
+        }
+
         public static MeshAsset LoadFromOBJ(StreamReader source)
         {
             if (source != null)
             {
                 string line = null;
                 MeshAsset asset = new MeshAsset();
+                char[] separators = new char[] { ' ' };
                 while ((line = source.ReadLine()) != null)
                 {
-                    string[] parts = line.Split(' ');
+                    if (line.Length == 0)
+                    {
+                        continue;
+                    }
+                    string[] parts = line.ToLowerInvariant().Split(separators, StringSplitOptions.RemoveEmptyEntries);
                     switch (parts[0].ToLower())
                     {
                         case "v":
-                            asset.AddPoint(float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3]));
+                            asset.AddPoint(Str2FP(parts[1]), Str2FP(parts[2]), Str2FP(parts[3]));
                             break;
                         case "vn":
-                            asset.AddNormal(float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3]));
+                            asset.AddNormal(Str2FP(parts[1]), Str2FP(parts[2]), Str2FP(parts[3]));
                             break;
                         case "vt":
-                            asset.AddTexCoord(float.Parse(parts[1]), float.Parse(parts[2]));
+                            asset.AddTexCoord(Str2FP(parts[1]), Str2FP(parts[2]));
                             break;
                         case "f":
                             if (parts.Length == 4)
@@ -47,6 +59,7 @@ namespace AssetTool
                             break;
                     }
                 }
+                asset.NormalizeGeometry();
                 asset.UpdateBoundingVolumes();
                 return asset;
             }
