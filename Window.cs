@@ -14,6 +14,7 @@ namespace AssetTool
         private void RenderView_ContextCreated(object sender, OpenGL.GlControlEventArgs e)
         {
             Gl.ClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+            Text = Gl.CurrentRenderer;
         }
 
         private void RenderView_ContextDestroying(object sender, OpenGL.GlControlEventArgs e)

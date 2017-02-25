@@ -1,0 +1,10 @@
+#version 400
+
+layout(location=0) out highp vec4 fragColor;
+
+uniform highp vec4 uFillColor;
+
+void main()
+{
+    fragColor = uFillColor;
+}
