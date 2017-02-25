@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using OpenGL;
+using System;
+using System.IO;
+using System.Windows.Forms;
 
 namespace AssetTool
 {
@@ -24,6 +27,7 @@ namespace AssetTool
             return true;
         }
 
+        [STAThread]
         static void Main(string[] args)
         {
             if (args.Length > 0 && GetOpts(args))
@@ -36,34 +40,46 @@ namespace AssetTool
                         ushort[] indexData = asset.SerializeIndexData();
                         float[] vertexData = asset.SerializeVertexData(options.ExportFlags);
                         float[] boundsData = asset.SerializeBoundingShapes(options.ExportFlags);
-                        using (FileStream output = new FileStream(options.OutputPath, FileMode.Create))
-                        {
-                            BinaryWriter writer = new BinaryWriter(output);
-                            uint bufferSize = sizeof(float) * (uint)(vertexData.Length + boundsData.Length) + sizeof(ushort) * (uint)indexData.Length;
+                        //using (FileStream output = new FileStream(options.OutputPath, FileMode.Create))
+                        //{
+                        //    BinaryWriter writer = new BinaryWriter(output);
+                        //    uint bufferSize = sizeof(float) * (uint)(vertexData.Length + boundsData.Length) + sizeof(ushort) * (uint)indexData.Length;
 
-                            writer.Write(bufferSize);
-                            writer.Write(options.ExportFlags);
-                            writer.Write((uint)indexData.Length);
-                            writer.Write((uint)vertexData.Length);
+                        //    writer.Write(bufferSize);
+                        //    writer.Write(options.ExportFlags);
+                        //    writer.Write((uint)indexData.Length);
+                        //    writer.Write((uint)vertexData.Length);
 
-                            foreach (float value in boundsData)
-                            {
-                                writer.Write(value);
-                            }
-                            foreach (ushort index in indexData)
-                            {
-                                writer.Write(index);
-                            }
-                            foreach (float value in vertexData)
-                            {
-                                writer.Write(value);
-                            }
-                            output.Close();
-                        }
+                        //    foreach (float value in boundsData)
+                        //    {
+                        //        writer.Write(value);
+                        //    }
+                        //    foreach (ushort index in indexData)
+                        //    {
+                        //        writer.Write(index);
+                        //    }
+                        //    foreach (float value in vertexData)
+                        //    {
+                        //        writer.Write(value);
+                        //    }
+                        //    output.Close();
+                        //}
                     }
                     source.Close();
                 }
             }
+
+            if (Environment.GetEnvironmentVariable("DEBUG") == "GL")
+            {
+                KhronosApi.RegisterApplicationLogDelegate(delegate (string format, object[] vals)
+                {
+                    Console.WriteLine(format, vals);
+                });
+            }
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Window());
         }
 
     }
