@@ -1,10 +1,13 @@
 #version 400
 
-layout(location=0) out highp vec4 fragColor;
+layout(location=0) in lowp vec3 FragNormal;
+layout(location=1) in lowp vec3 FragCoord;
 
-uniform highp vec4 uFillColor;
+layout(location=0) out highp vec4 FragColor;
+
+uniform highp vec4 FillColor;
 
 void main()
 {
-    fragColor = uFillColor;
+    FragColor = vec4(FragCoord, 1.0);
 }

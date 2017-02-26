@@ -30,16 +30,17 @@ namespace AssetTool
         [STAThread]
         static void Main(string[] args)
         {
+            MeshAsset asset = null;
             if (args.Length > 0 && GetOpts(args))
             {
-                MeshAsset asset = null;
                 using (StreamReader source = new StreamReader(options.SourcePath))
                 {
-                    if ((asset = MeshLoader.LoadFromOBJ(source)) != null)
+                    asset = MeshLoader.LoadFromOBJ(source);
+                    //if ((asset = MeshLoader.LoadFromOBJ(source)) != null)
                     {
-                        ushort[] indexData = asset.SerializeIndexData();
-                        float[] vertexData = asset.SerializeVertexData(options.ExportFlags);
-                        float[] boundsData = asset.SerializeBoundingShapes(options.ExportFlags);
+                        //ushort[] indexData = asset.SerializeIndexData();
+                        //float[] vertexData = asset.SerializeVertexData(options.ExportFlags);
+                        //float[] boundsData = asset.SerializeBoundingShapes(options.ExportFlags);
                         //using (FileStream output = new FileStream(options.OutputPath, FileMode.Create))
                         //{
                         //    BinaryWriter writer = new BinaryWriter(output);
@@ -79,7 +80,7 @@ namespace AssetTool
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Window());
+            Application.Run(new Window(asset));
         }
 
     }

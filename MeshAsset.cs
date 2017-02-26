@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AssetTool
 {
-    class MeshAsset
+    public class MeshAsset
     {
         public const uint EXPORT_NORMAL = 0x0001;
         public const uint EXPORT_TEXCOORD0 = 0x0002;
@@ -156,9 +156,9 @@ namespace AssetTool
             for (int i = 0; i < Points.Count; i++)
             {
                 Vec3D temp = Points[i];
-                temp.X *= scale + dx;
-                temp.Y *= scale + dy;
-                temp.Z *= scale + dz;
+                temp.X = temp.X * scale + dx;
+                temp.Y = temp.Y * scale + dy;
+                temp.Z = temp.Z * scale + dz;
                 Points[i] = temp;
             }
         }
