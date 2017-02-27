@@ -11,6 +11,7 @@ namespace AssetTool
     {
         public virtual void Set(Matrix4x4 v) { throw new NotImplementedException(); }
         public virtual void Set(Vertex4f v) { throw new NotImplementedException(); }
+        public virtual void Set(Vertex3f v) { throw new NotImplementedException(); }
         public virtual void Assign(int handle) { throw new NotImplementedException(); }
     }
 
@@ -47,6 +48,12 @@ namespace AssetTool
     {
         public override void Set(Vertex4f v) { SetValue(v); }
         protected override void Update(int handle) { Gl.Uniform4(handle, Value.X, Value.Y, Value.Z, Value.W); }
+    }
+
+    public class ParameterVector3 : TypedParameter<Vertex3f>
+    {
+        public override void Set(Vertex3f v) { SetValue(v); }
+        protected override void Update(int handle) { Gl.Uniform3(handle, Value.X, Value.Y, Value.Z); }
     }
 
 

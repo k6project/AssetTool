@@ -28,9 +28,10 @@ namespace AssetTool
 
             if (CurrentAsset != null)
             {
+                uint exportFlags = MeshAsset.EXPORT_NORMAL | MeshAsset.EXPORT_U16_INDICES;
                 ushort[] indexData = CurrentAsset.SerializeIndexData();
-                float[] vertexData = CurrentAsset.SerializeVertexData(MeshAsset.EXPORT_NORMAL |MeshAsset.EXPORT_U16_INDICES);
-                CurrentMesh = TheRenderer.CreateMesh(vertexData, indexData);
+                float[] vertexData = CurrentAsset.SerializeVertexData(exportFlags);
+                CurrentMesh = TheRenderer.CreateMesh(vertexData, indexData, exportFlags);
             }
 
             Gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -58,11 +59,16 @@ namespace AssetTool
             float aspectRatio = ((float)ctrl.Width) / ((float)ctrl.Height);
             PerspectiveProjectionMatrix proj = new PerspectiveProjectionMatrix(60, aspectRatio, 0.1f, 100);
             ModelMatrix lookAt = new ModelMatrix();
-            lookAt.Translate(0, 0, -0.8);
+            lookAt.Translate(0, 0, -0.8); // camera zoom
             lookAt.RotateY(0);//change this rotation for camera
             ModelMatrix model = new ModelMatrix();
-            lookAt.RotateX(-90);
+            model.RotateX(-90);
+
+
+            TheRenderer.Parameters["LightDir"].Set(-lookAt.ForwardVector);
             TheRenderer.Parameters["MVP"].Set(proj * lookAt * model);
+            TheRenderer.Parameters["NormalToView"].Set((lookAt * model).GetInverseMatrix().Transpose());
+
             TheRenderer.RenderFrame(CurrentMesh, CurrentMaterial);
         }
     }

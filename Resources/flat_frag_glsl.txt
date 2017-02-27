@@ -1,13 +1,14 @@
 #version 400
 
 uniform highp vec4 FillColor;
+uniform lowp vec3 LightDir;
 
 in lowp vec3 FragNormal;
-in lowp vec3 FragCoord;
 
 out highp vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(abs(FragNormal), 1.0);
+    float light = max(0.3, dot(FragNormal, LightDir));
+    FragColor = light * FillColor;
 }

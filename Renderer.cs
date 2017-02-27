@@ -8,8 +8,9 @@ namespace AssetTool
 {
     class Renderer
     {
-        private const uint ATTR_POSITION = 0;
-        private const uint ATTR_NORMAL   = 1;
+        private const uint ATTR_POSITION  = 0;
+        private const uint ATTR_NORMAL    = 1;
+        private const uint ATTR_TEXCOORD0 = 2;
 
         public class Mesh
         {
@@ -46,7 +47,9 @@ namespace AssetTool
         {
             Parameters = new Dictionary<string, Parameter>();
             Parameters.Add("MVP", new ParameterMatrix4x4());
+            Parameters.Add("NormalToView", new ParameterMatrix4x4());
             Parameters.Add("FillColor", new ParameterVector4());
+            Parameters.Add("LightDir", new ParameterVector3());
             CurrentProgram = 0;
             CurrentVAO = 0;
         }
@@ -74,17 +77,32 @@ namespace AssetTool
                 mesh.IBO = buffers[1];
             }
 
+            int stride = 3 * sizeof(float);
+            if ((exportFlags & MeshAsset.EXPORT_NORMAL) != 0)
+            {
+                stride += 3 * sizeof(float);
+            }
+            if ((exportFlags & MeshAsset.EXPORT_TEXCOORD0) != 0)
+            {
+                stride += 2 * sizeof(float);
+            }
+
             Gl.EnableVertexAttribArray(ATTR_POSITION);
             IntPtr offset = new IntPtr(0);
-            Gl.VertexAttribPointer(ATTR_POSITION, 3, Gl.FLOAT, false, 6 * sizeof(float), offset);
-
+            Gl.VertexAttribPointer(ATTR_POSITION, 3, Gl.FLOAT, false, stride, offset);
             if ((exportFlags & MeshAsset.EXPORT_NORMAL) != 0)
             {
                 Gl.EnableVertexAttribArray(ATTR_NORMAL);
                 offset = IntPtr.Add(offset, 3 * sizeof(float));
-                Gl.VertexAttribPointer(ATTR_NORMAL, 3, Gl.FLOAT, false, 6 * sizeof(float), offset);
+                Gl.VertexAttribPointer(ATTR_NORMAL, 3, Gl.FLOAT, false, stride, offset);
             }
-            
+            if ((exportFlags & MeshAsset.EXPORT_TEXCOORD0) != 0)
+            {
+                Gl.EnableVertexAttribArray(ATTR_TEXCOORD0);
+                offset = IntPtr.Add(offset, 3 * sizeof(float));
+                Gl.VertexAttribPointer(ATTR_TEXCOORD0, 2, Gl.FLOAT, false, stride, offset);
+            }
+
             Gl.BindVertexArray(0);
             return mesh;
         }
