@@ -17,6 +17,7 @@ namespace AssetTool
             TheRenderer = new Renderer();
             CurrentAsset = asset;
             InitializeComponent();
+            WindowState = FormWindowState.Maximized;
         }
 
         private void RenderView_ContextCreated(object sender, OpenGL.GlControlEventArgs e)

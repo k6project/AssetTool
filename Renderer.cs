@@ -8,6 +8,9 @@ namespace AssetTool
 {
     class Renderer
     {
+        private const uint ATTR_POSITION = 0;
+        private const uint ATTR_NORMAL   = 1;
+
         public class Mesh
         {
             public uint VAO, VBO, IBO;
@@ -48,7 +51,7 @@ namespace AssetTool
             CurrentVAO = 0;
         }
 
-        public Mesh CreateMesh(float[] vertexData, ushort[] indexData)
+        public Mesh CreateMesh(float[] vertexData, ushort[] indexData, uint exportFlags = 0)
         {
             Mesh mesh = new Mesh();
             mesh.VAO = Gl.GenVertexArray();
@@ -70,10 +73,18 @@ namespace AssetTool
                 Gl.BufferData(BufferTargetARB.ElementArrayBuffer, length, mem.Address, BufferUsageARB.StaticDraw);
                 mesh.IBO = buffers[1];
             }
-            Gl.EnableVertexAttribArray(0);
-            Gl.VertexAttribPointer(0, 3, Gl.FLOAT, false, 6 * sizeof(float), null);
-            Gl.EnableVertexAttribArray(1);
-            Gl.VertexAttribPointer(1, 3, Gl.FLOAT, false, 6 * sizeof(float), 3 * sizeof(float));
+
+            Gl.EnableVertexAttribArray(ATTR_POSITION);
+            IntPtr offset = new IntPtr(0);
+            Gl.VertexAttribPointer(ATTR_POSITION, 3, Gl.FLOAT, false, 6 * sizeof(float), offset);
+
+            if ((exportFlags & MeshAsset.EXPORT_NORMAL) != 0)
+            {
+                Gl.EnableVertexAttribArray(ATTR_NORMAL);
+                offset = IntPtr.Add(offset, 3 * sizeof(float));
+                Gl.VertexAttribPointer(ATTR_NORMAL, 3, Gl.FLOAT, false, 6 * sizeof(float), offset);
+            }
+            
             Gl.BindVertexArray(0);
             return mesh;
         }
